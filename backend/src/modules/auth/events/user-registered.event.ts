@@ -1,0 +1,8 @@
+/** Emitted when a new user completes registration. */
+export class UserRegisteredEvent {
+  constructor(
+    public readonly userId: string,
+    public readonly username: string,
+    public readonly email: string,
+  ) {}
+}
