@@ -17,6 +17,10 @@ export class ProfileMapper {
       dietaryPreference: record.dietaryPreference,
       timezone: record.timezone,
       avatarUrl: record.avatarUrl,
+      weightUnit: record.weightUnit,
+      distanceUnit: record.distanceUnit,
+      theme: record.theme,
+      notifPrefs: record.notifPrefs as Record<string, boolean> | null,
     };
   }
 
@@ -33,6 +37,10 @@ export class ProfileMapper {
       dietaryPreference: domain.dietaryPreference,
       timezone: domain.timezone,
       avatarUrl: domain.avatarUrl,
+      weightUnit: domain.weightUnit,
+      distanceUnit: domain.distanceUnit,
+      theme: domain.theme,
+      notifPrefs: domain.notifPrefs as ProfileResponseDto['notifPrefs'] ?? null,
     };
   }
 }

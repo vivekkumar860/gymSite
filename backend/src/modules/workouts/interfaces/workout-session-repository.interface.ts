@@ -46,6 +46,12 @@ export interface IWorkoutSessionRepository {
   /** Get all set logs for a session. */
   findSetsBySessionId(sessionId: string): Promise<WorkoutSetLogDomain[]>;
 
+  /** Find a single set log by ID. */
+  findSetById(setId: string): Promise<WorkoutSetLogDomain | null>;
+
+  /** Delete a set log by ID. */
+  deleteSet(setId: string): Promise<void>;
+
   /** Count completed sessions for a user. */
   countCompletedByUserId(userId: string): Promise<number>;
 }

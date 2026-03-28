@@ -33,25 +33,26 @@ export function SetLoggerForm({
       weight: 0,
       weightUnit: "kg",
       isWarmup: false,
-      isDropSet: false,
+      isFailure: false,
       ...defaultValues,
     },
   });
 
   const weightUnit = watch("weightUnit");
   const isWarmup = watch("isWarmup");
-  const isDropSet = watch("isDropSet");
+  const isFailure = watch("isFailure");
 
   return (
     <form onSubmit={handleSubmit((data) => onSubmit(data as LogSetFormValues))} className="space-y-4">
       {/* Reps */}
       <div className="space-y-1.5">
-        <Label htmlFor="reps">Reps</Label>
+        <Label htmlFor="reps" className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Reps</Label>
         <Input
           id="reps"
           type="number"
           inputMode="numeric"
           placeholder="e.g. 10"
+          className="text-lg font-mono font-bold"
           {...register("reps")}
           aria-invalid={!!errors.reps}
         />
@@ -62,7 +63,7 @@ export function SetLoggerForm({
 
       {/* Weight + Unit toggle */}
       <div className="space-y-1.5">
-        <Label htmlFor="weight">Weight</Label>
+        <Label htmlFor="weight" className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Weight</Label>
         <div className="flex items-center gap-2">
           <Input
             id="weight"
@@ -70,17 +71,17 @@ export function SetLoggerForm({
             inputMode="decimal"
             step="any"
             placeholder="e.g. 60"
-            className="flex-1"
+            className="flex-1 text-lg font-mono font-bold"
             {...register("weight")}
             aria-invalid={!!errors.weight}
           />
-          <div className="flex items-center gap-1 rounded-lg border px-2 py-1">
+          <div className="flex items-center gap-1 rounded-xl glass px-2 py-1.5">
             <button
               type="button"
-              className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+              className={`rounded-lg px-3 py-1 text-xs font-bold transition-all duration-200 ${
                 weightUnit === "kg"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground"
+                  ? "bg-primary text-primary-foreground glow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setValue("weightUnit", "kg")}
             >
@@ -88,10 +89,10 @@ export function SetLoggerForm({
             </button>
             <button
               type="button"
-              className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+              className={`rounded-lg px-3 py-1 text-xs font-bold transition-all duration-200 ${
                 weightUnit === "lbs"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground"
+                  ? "bg-primary text-primary-foreground glow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setValue("weightUnit", "lbs")}
             >
@@ -106,7 +107,7 @@ export function SetLoggerForm({
 
       {/* RPE (optional) */}
       <div className="space-y-1.5">
-        <Label htmlFor="rpe">RPE (optional)</Label>
+        <Label htmlFor="rpe" className="font-mono text-xs uppercase tracking-widest text-muted-foreground">RPE (optional)</Label>
         <Input
           id="rpe"
           type="number"
@@ -115,6 +116,7 @@ export function SetLoggerForm({
           min="0"
           max="10"
           placeholder="0 - 10"
+          className="font-mono"
           {...register("rpe")}
           aria-invalid={!!errors.rpe}
         />
@@ -123,7 +125,7 @@ export function SetLoggerForm({
         )}
       </div>
 
-      {/* Warmup / Drop set switches */}
+      {/* Warmup / To-failure switches */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
           <Switch
@@ -135,15 +137,15 @@ export function SetLoggerForm({
         </div>
         <div className="flex items-center gap-2">
           <Switch
-            checked={isDropSet}
-            onCheckedChange={(checked: boolean) => setValue("isDropSet", checked)}
-            id="isDropSet"
+            checked={isFailure}
+            onCheckedChange={(checked: boolean) => setValue("isFailure", checked)}
+            id="isFailure"
           />
-          <Label htmlFor="isDropSet">Drop set</Label>
+          <Label htmlFor="isFailure">To failure</Label>
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button type="submit" className="w-full glow-primary" disabled={isSubmitting}>
         {isSubmitting ? "Saving..." : "Log Set"}
       </Button>
     </form>

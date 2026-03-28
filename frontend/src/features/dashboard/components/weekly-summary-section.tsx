@@ -15,7 +15,7 @@ export function WeeklySummarySection() {
       isError={isError}
       onRetry={() => refetch()}
       isEmpty={!data}
-      emptyMessage="Weekly overview coming soon."
+      emptyMessage="No activity this week yet."
     >
       {data && (
         <WeeklySummaryCard

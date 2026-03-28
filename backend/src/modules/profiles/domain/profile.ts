@@ -11,4 +11,8 @@ export interface ProfileDomain {
   dietaryPreference: string;
   timezone: string;
   avatarUrl: string | null;
+  weightUnit: string;
+  distanceUnit: string;
+  theme: string;
+  notifPrefs: Record<string, boolean> | null;
 }

@@ -14,7 +14,10 @@ export const ROUTES = {
     list: "/exercises",
     detail: (id: string) => `/exercises/${id}` as const,
   },
-  nutrition: "/nutrition",
+  nutrition: {
+    home: "/nutrition",
+    plan: "/nutrition/plan",
+  },
   habits: "/habits",
   progress: "/progress",
   goals: "/goals",

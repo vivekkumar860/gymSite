@@ -1,9 +1,30 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
 const BCRYPT_SALT_ROUNDS = 12;
+
+// ── Exercise name → image slug mapping ─────────────────────
+// Maps seeded exercise names to the dataset image folder slugs
+const EXERCISE_IMAGE_MAP: Record<string, string> = {
+  'Barbell Bench Press': 'bench-press',
+  'Push-Up': 'push-up',
+  'Cable Fly': 'chest-fly-machine',
+  'Barbell Deadlift': 'deadlift',
+  'Pull-Up': 'pull-up',
+  'Lat Pulldown': 'lat-pulldown',
+  'Overhead Press': 'shoulder-press',
+  'Lateral Raise': 'lateral-raises',
+  'Barbell Curl': 'barbell-biceps-curl',
+  'Tricep Pushdown': 'tricep-pushdown',
+  'Barbell Squat': 'squat',
+  'Romanian Deadlift': 'romanian-deadlift',
+  'Hip Thrust': 'hip-thrust',
+  'Plank': 'plank',
+};
 
 async function main(): Promise<void> {
   console.log('Seeding database...');
@@ -105,18 +126,23 @@ async function main(): Promise<void> {
   ];
 
   for (const exercise of exercises) {
+    const slug = exercise.exerciseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const imageSlug = EXERCISE_IMAGE_MAP[exercise.exerciseName];
+    const imageUrl = imageSlug ? `/exercises/${imageSlug}/001.jpg` : null;
+
     await prisma.exercise.upsert({
       where: { exerciseName: exercise.exerciseName },
-      update: {},
+      update: { imageUrl },
       create: {
         ...exercise,
-        slug: exercise.exerciseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+        slug,
+        imageUrl,
         createdBy: admin.id,
       },
     });
   }
 
-  console.log(`Seeded ${exercises.length} exercises`);
+  console.log(`Seeded ${exercises.length} exercises (${Object.keys(EXERCISE_IMAGE_MAP).length} with images)`);
 
   // ── Test user goal ──────────────────────────────────────
   await prisma.goal.upsert({
@@ -157,7 +183,95 @@ async function main(): Promise<void> {
   }
 
   console.log('Onboarding steps seeded');
+
+  // ── Food items from Indian RDA dataset ────────────────────
+  await seedFoodItems();
+
   console.log('Seeding complete!');
+}
+
+// ── Food items seed ────────────────────────────────────────
+interface CsvFoodRow {
+  Food_items: string;
+  Breakfast: string;
+  Lunch: string;
+  Dinner: string;
+  VegNovVeg: string;
+  Calories: string;
+  Fats: string;
+  Proteins: string;
+  Carbohydrates: string;
+  Fibre: string;
+}
+
+async function seedFoodItems(): Promise<void> {
+  const csvPath = path.resolve(__dirname, '../../Datasets/indian_rda_based_diet_recommendation_system.csv');
+
+  if (!fs.existsSync(csvPath)) {
+    console.log('Food items CSV not found, skipping food seed');
+    return;
+  }
+
+  const raw = fs.readFileSync(csvPath, 'utf-8');
+  const lines = raw.split('\n').filter((l) => l.trim());
+  const header = lines[0].split(',');
+
+  const col = (name: string) => header.indexOf(name);
+
+  let seeded = 0;
+  let skipped = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const fields = lines[i].split(',');
+    const name = fields[col('Food_items')]?.trim();
+    const calories = Math.round(parseFloat(fields[col('Calories')] ?? '0'));
+
+    if (!name || calories <= 0) {
+      skipped++;
+      continue;
+    }
+
+    const proteinG = parseFloat(fields[col('Proteins')] ?? '0');
+    const carbsG = parseFloat(fields[col('Carbohydrates')] ?? '0');
+    const fatG = parseFloat(fields[col('Fats')] ?? '0');
+    const fibreG = parseFloat(fields[col('Fibre')] ?? '0');
+    const vegFlag = fields[col('VegNovVeg')]?.trim();
+    const isVeg = vegFlag !== '1';
+    const forBreakfast = fields[col('Breakfast')]?.trim() === '1';
+    const forLunch = fields[col('Lunch')]?.trim() === '1';
+    const forDinner = fields[col('Dinner')]?.trim() === '1';
+
+    await prisma.foodItem.upsert({
+      where: { name },
+      update: {
+        calories,
+        proteinG,
+        carbsG,
+        fatG,
+        fibreG: fibreG || null,
+        isVeg,
+        forBreakfast,
+        forLunch,
+        forDinner,
+      },
+      create: {
+        name,
+        calories,
+        proteinG,
+        carbsG,
+        fatG,
+        fibreG: fibreG || null,
+        isVeg,
+        forBreakfast,
+        forLunch,
+        forDinner,
+        cuisine: 'INDIAN',
+      },
+    });
+    seeded++;
+  }
+
+  console.log(`Seeded ${seeded} food items (${skipped} skipped)`);
 }
 
 main()

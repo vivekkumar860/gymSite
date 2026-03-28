@@ -109,6 +109,23 @@ export class NutritionService {
     await this.planRepo.deleteMeal(mealId);
   }
 
+  /** Activate a plan, deactivating all others for the user. */
+  async activatePlan(
+    planId: string,
+    userId: string,
+  ): Promise<NutritionPlanResponseDto> {
+    const plan = await this.findPlanOrFail(planId);
+    this.ensureOwnership(plan.userId, userId);
+
+    if (plan.isActive) {
+      return NutritionMapper.planToResponse(plan);
+    }
+
+    await this.planRepo.deactivateAllForUser(userId);
+    const updated = await this.planRepo.update(planId, { isActive: true });
+    return NutritionMapper.planToResponse(updated);
+  }
+
   // ── Private helpers ──────────────────────────────────────────
 
   private async findPlanOrFail(planId: string) {

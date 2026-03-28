@@ -1,34 +1,26 @@
 "use client";
 
-import type { MealItem } from "@/api/schemas/nutrition.schema";
-import { Button } from "@/components/ui/button";
-import { Trash2Icon } from "lucide-react";
+import type { PlanFoodItem } from "@/api/schemas/nutrition.schema";
 
 type MealItemRowProps = {
-  item: MealItem;
-  onDelete?: () => void;
+  item: PlanFoodItem;
 };
 
-export function MealItemRow({ item, onDelete }: MealItemRowProps) {
+export function MealItemRow({ item }: MealItemRowProps) {
   return (
-    <div className="flex items-center justify-between gap-2 py-2">
+    <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-2.5 -mx-2 transition-colors hover:bg-primary/5">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{item.foodName}</p>
-        <p className="text-xs text-muted-foreground">
-          {item.quantity} serving{item.quantity !== 1 ? "s" : ""}
-        </p>
+        <p className="text-sm font-medium truncate">{item.name}</p>
+        {item.quantity && (
+          <p className="text-xs text-muted-foreground/80">{item.quantity}</p>
+        )}
       </div>
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span>{Math.round(item.macros.calories)} kcal</span>
-        <span>{Math.round(item.macros.protein)}p</span>
-        <span>{Math.round(item.macros.carbs)}c</span>
-        <span>{Math.round(item.macros.fat)}f</span>
+      <div className="flex items-center gap-3 text-xs font-mono">
+        <span className="font-bold text-foreground">{Math.round(item.calories)} kcal</span>
+        <span className="text-blue-500 dark:text-blue-400">{Math.round(item.protein)}p</span>
+        <span className="text-amber-500 dark:text-amber-400">{Math.round(item.carbs)}c</span>
+        <span className="text-rose-500 dark:text-rose-400">{Math.round(item.fat)}f</span>
       </div>
-      {onDelete && (
-        <Button variant="ghost" size="icon-xs" onClick={onDelete}>
-          <Trash2Icon className="size-3.5" />
-        </Button>
-      )}
     </div>
   );
 }

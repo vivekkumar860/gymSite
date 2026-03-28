@@ -17,6 +17,7 @@ export class ExerciseMapper {
       movementPattern: record.movementPattern,
       instructions: record.instructions,
       videoUrl: record.videoUrl,
+      imageUrl: record.imageUrl,
       isCompound: record.isCompound,
       isActive: record.isActive,
       createdBy: record.createdBy,
@@ -38,6 +39,7 @@ export class ExerciseMapper {
       movementPattern: domain.movementPattern,
       instructions: domain.instructions,
       videoUrl: domain.videoUrl,
+      imageUrl: domain.imageUrl,
       isCompound: domain.isCompound,
       isActive: domain.isActive,
     };

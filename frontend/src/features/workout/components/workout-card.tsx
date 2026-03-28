@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type WorkoutCardProps = {
   workout: WorkoutSummary;
@@ -39,12 +40,15 @@ export function WorkoutCard({ workout, onClick }: WorkoutCardProps) {
 
   return (
     <Card
-      className={onClick ? "cursor-pointer transition-shadow hover:shadow-md" : ""}
+      className={cn(
+        "glass card-depth-2 rounded-2xl border-border/30 overflow-hidden",
+        onClick && "cursor-pointer interactive"
+      )}
       onClick={onClick}
     >
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle>{workout.name}</CardTitle>
+          <CardTitle className="font-bold">{workout.name}</CardTitle>
           <Badge variant={statusVariant[workout.status]}>
             {statusLabel[workout.status]}
           </Badge>
@@ -53,12 +57,12 @@ export function WorkoutCard({ workout, onClick }: WorkoutCardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{workout.exerciseCount} exercises</span>
-          <span>{workout.totalSets} sets</span>
-          <span>{totalVolume} kg volume</span>
+          <span className="font-mono">{workout.exerciseCount} exercises</span>
+          <span className="font-mono">{workout.totalSets} sets</span>
+          <span className="font-mono font-bold text-foreground">{totalVolume} kg</span>
         </div>
         {workout.duration != null && (
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs font-mono text-muted-foreground">
             {Math.round(workout.duration / 60)} min
           </p>
         )}

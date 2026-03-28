@@ -15,6 +15,7 @@ export const exerciseSchema = z.object({
   movementPattern: z.string().nullable(),
   instructions: z.string().nullable(),
   videoUrl: z.string().nullable(),
+  imageUrl: z.string().nullable(),
   isCompound: z.boolean(),
   isActive: z.boolean(),
 });

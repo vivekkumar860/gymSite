@@ -19,6 +19,7 @@ function buildExercise(
     movementPattern: 'PUSH',
     instructions: null,
     videoUrl: null,
+    imageUrl: null,
     isCompound: true,
     isActive: true,
     createdBy: null,

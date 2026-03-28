@@ -4,8 +4,13 @@ import type {
   NutritionTargets,
   GeneratedMeal,
   BudgetPreferenceInput,
+  SingleMealParams,
 } from '../interfaces/nutrition.interfaces';
-import { buildMealsFromTemplates, TemplateMeal } from './base-meal.strategy';
+import {
+  buildMealsFromTemplates,
+  buildSingleMealFromTemplate,
+  TemplateMeal,
+} from './base-meal.strategy';
 
 /**
  * Generates a budget-friendly hostel meal plan.
@@ -22,6 +27,12 @@ export class HostelBudgetMealStrategy implements MealPlanStrategy {
   ): GeneratedMeal[] {
     const templates = this.getTemplates();
     return buildMealsFromTemplates(templates, targets);
+  }
+
+  generateSingleMeal(params: SingleMealParams, _budgetPreference: BudgetPreferenceInput): GeneratedMeal {
+    const templates = this.getTemplates();
+    const template = templates.find((t) => t.mealName.toLowerCase() === params.mealName.toLowerCase()) ?? templates[0];
+    return buildSingleMealFromTemplate(template, params.mealOrder, params.targetCalories, params.targetProteinG, params.targetCarbsG, params.targetFatG);
   }
 
   private getTemplates(): TemplateMeal[] {

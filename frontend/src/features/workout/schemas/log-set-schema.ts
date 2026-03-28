@@ -5,7 +5,7 @@ export const logSetSchema = z.object({
   weight: z.coerce.number().min(0).max(9999),
   weightUnit: z.enum(["kg", "lbs"]),
   isWarmup: z.boolean().default(false),
-  isDropSet: z.boolean().default(false),
+  isFailure: z.boolean().default(false),
   rpe: z.coerce.number().min(0).max(10).optional(),
 });
 

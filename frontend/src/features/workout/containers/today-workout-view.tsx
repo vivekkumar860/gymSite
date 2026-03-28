@@ -6,6 +6,7 @@ import { useTodayWorkout } from "../hooks/use-today-workout";
 import { useStartWorkout } from "../hooks/use-start-workout";
 import { useCompleteWorkout } from "../hooks/use-complete-workout";
 import { useLogSet } from "../hooks/use-log-set";
+import { useDeleteSet } from "../hooks/use-delete-set";
 import { WorkoutSessionHeader } from "../components/workout-session-header";
 import { WorkoutExerciseCard } from "../components/workout-exercise-card";
 import { WorkoutSummaryCard } from "../components/workout-summary-card";
@@ -23,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ROUTES } from "@/config/routes";
+import { formatErrorMessage } from "@/shared/utils/format-error";
 import { toLogSetDto, type LogSetFormValues } from "../types/workout.types";
 
 export function TodayWorkoutView() {
@@ -31,6 +33,7 @@ export function TodayWorkoutView() {
   const startWorkout = useStartWorkout();
   const completeWorkout = useCompleteWorkout();
   const logSet = useLogSet();
+  const deleteSet = useDeleteSet();
 
   const [logExerciseId, setLogExerciseId] = useState<string | null>(null);
   const [restTimerOpen, setRestTimerOpen] = useState(false);
@@ -38,7 +41,7 @@ export function TodayWorkoutView() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
         <PageHeader title="Today's Workout" />
         <LoadingSkeleton variant="detail" />
       </div>
@@ -47,10 +50,10 @@ export function TodayWorkoutView() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
         <PageHeader title="Today's Workout" />
         <ErrorBoundaryCard
-          message={error.message ?? "Failed to load today's workout."}
+          message={formatErrorMessage(error, "Failed to load today's workout.")}
           onRetry={() => refetch()}
         />
       </div>
@@ -59,13 +62,13 @@ export function TodayWorkoutView() {
 
   if (!workout) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
         <PageHeader title="Today's Workout" />
         <EmptyState
           title="No workout planned for today"
-          description="Take a rest day or create a new workout plan."
+          description="Generate a workout plan to get started."
           action={{
-            label: "View Workout Plans",
+            label: "Create Workout Plan",
             onClick: () => router.push(ROUTES.workout.plan),
           }}
         />
@@ -103,7 +106,7 @@ export function TodayWorkoutView() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
       <PageHeader title="Today's Workout" />
 
       {/* Completion summary */}
@@ -123,12 +126,19 @@ export function TodayWorkoutView() {
 
       {/* Exercise list */}
       <div className="space-y-4">
-        {workout.exercises.map((exercise) => (
-          <WorkoutExerciseCard
+        {workout.exercises.map((exercise, idx) => (
+          <div
             key={exercise.id}
-            exercise={exercise}
-            onLogSet={isActive ? setLogExerciseId : undefined}
-          />
+            className="animate-slide-up"
+            style={{ animationDelay: `${idx * 50}ms` }}
+          >
+            <WorkoutExerciseCard
+              exercise={exercise}
+              exerciseIndex={idx}
+              onLogSet={isActive ? setLogExerciseId : undefined}
+              onDeleteSet={isActive ? (setId) => deleteSet.mutate({ sessionId: workout.id, setId }) : undefined}
+            />
+          </div>
         ))}
       </div>
 

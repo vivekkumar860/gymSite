@@ -128,6 +128,22 @@ export class WorkoutSessionRepository implements IWorkoutSessionRepository {
     return records.map(WorkoutMapper.setLogToDomain);
   }
 
+  /** Find a single set log by ID. */
+  async findSetById(setId: string): Promise<WorkoutSetLogDomain | null> {
+    const record = await this.prisma.workoutSetLog.findUnique({
+      where: { id: setId },
+    });
+    if (!record) return null;
+    return WorkoutMapper.setLogToDomain(record);
+  }
+
+  /** Delete a set log by ID. */
+  async deleteSet(setId: string): Promise<void> {
+    await this.prisma.workoutSetLog.delete({
+      where: { id: setId },
+    });
+  }
+
   /** Count completed sessions for a user. */
   async countCompletedByUserId(userId: string): Promise<number> {
     return this.prisma.workoutSession.count({

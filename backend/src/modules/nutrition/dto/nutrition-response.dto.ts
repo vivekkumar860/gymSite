@@ -7,10 +7,13 @@ export interface NutritionPlanResponseDto {
   dailyProteinG: number;
   dailyCarbsG: number;
   dailyFatG: number;
+  bmr: number | null;
+  tdee: number | null;
   isActive: boolean;
   mealPlanType: string | null;
   activityLevel: string | null;
   goalType: string | null;
+  budgetPreference: string | null;
   createdAt: string;
 }
 

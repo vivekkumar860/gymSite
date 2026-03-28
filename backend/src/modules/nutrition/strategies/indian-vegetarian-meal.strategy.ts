@@ -4,8 +4,13 @@ import type {
   NutritionTargets,
   GeneratedMeal,
   BudgetPreferenceInput,
+  SingleMealParams,
 } from '../interfaces/nutrition.interfaces';
-import { buildMealsFromTemplates, TemplateMeal } from './base-meal.strategy';
+import {
+  buildMealsFromTemplates,
+  buildSingleMealFromTemplate,
+  TemplateMeal,
+} from './base-meal.strategy';
 
 /**
  * Generates a vegetarian Indian meal plan.
@@ -22,6 +27,25 @@ export class IndianVegetarianMealStrategy implements MealPlanStrategy {
   ): GeneratedMeal[] {
     const templates = this.getTemplates(budgetPreference);
     return buildMealsFromTemplates(templates, targets);
+  }
+
+  /** Regenerate a single meal using its existing macro targets. */
+  generateSingleMeal(
+    params: SingleMealParams,
+    budgetPreference: BudgetPreferenceInput,
+  ): GeneratedMeal {
+    const templates = this.getTemplates(budgetPreference);
+    const template = templates.find(
+      (t) => t.mealName.toLowerCase() === params.mealName.toLowerCase(),
+    ) ?? templates[0];
+    return buildSingleMealFromTemplate(
+      template,
+      params.mealOrder,
+      params.targetCalories,
+      params.targetProteinG,
+      params.targetCarbsG,
+      params.targetFatG,
+    );
   }
 
   private getTemplates(budget: BudgetPreferenceInput): TemplateMeal[] {

@@ -19,6 +19,7 @@ import { JwtAuthGuard } from '../../../common/guards';
 import { CurrentUser } from '../../../common/decorators';
 import { RecordProgressSchema } from '../dto/record-progress.dto';
 import { RecordMeasurementSchema } from '../dto/record-measurement.dto';
+import { z } from 'zod';
 import type {
   ProgressEntryResponseDto,
   BodyMeasurementResponseDto,
@@ -26,6 +27,17 @@ import type {
   ProgressSummaryResponseDto,
   WeeklySummaryResponseDto,
 } from '../dto/progress-response.dto';
+
+const VALID_METRIC_TYPES = ['BODY_WEIGHT', 'BODY_FAT_PCT', 'RESTING_HEART_RATE'] as const;
+
+const ProgressEntriesQuerySchema = z.object({
+  metricType: z.enum(VALID_METRIC_TYPES),
+  limit: z.coerce.number().int().min(1).max(100).default(30),
+});
+
+const LimitQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(30),
+});
 
 /** Handles all progress tracking endpoints. */
 @Controller('progress')
@@ -67,14 +79,10 @@ export class ProgressController {
   @Get('entries')
   async getEntries(
     @CurrentUser() userId: string,
-    @Query('metricType') metricType: string,
-    @Query('limit') limit?: string,
+    @Query(new ZodValidationPipe(ProgressEntriesQuerySchema))
+    query: z.infer<typeof ProgressEntriesQuerySchema>,
   ): Promise<ProgressEntryResponseDto[]> {
-    return this.queryService.getEntries(
-      userId,
-      metricType,
-      Number(limit) || undefined,
-    );
+    return this.queryService.getEntries(userId, query.metricType, query.limit);
   }
 
   /** Record a body measurement. */
@@ -91,21 +99,20 @@ export class ProgressController {
   @Get('measurements')
   async getMeasurements(
     @CurrentUser() userId: string,
-    @Query('limit') limit?: string,
+    @Query(new ZodValidationPipe(LimitQuerySchema))
+    query: z.infer<typeof LimitQuerySchema>,
   ): Promise<BodyMeasurementResponseDto[]> {
-    return this.queryService.getRecentMeasurements(
-      userId,
-      Number(limit) || undefined,
-    );
+    return this.queryService.getRecentMeasurements(userId, query.limit);
   }
 
   /** Get progress photos. */
   @Get('photos')
   async getPhotos(
     @CurrentUser() userId: string,
-    @Query('limit') limit?: string,
+    @Query(new ZodValidationPipe(LimitQuerySchema))
+    query: z.infer<typeof LimitQuerySchema>,
   ): Promise<ProgressPhotoResponseDto[]> {
-    return this.queryService.getPhotos(userId, Number(limit) || undefined);
+    return this.queryService.getPhotos(userId, query.limit);
   }
 
   /** Delete a progress photo. */

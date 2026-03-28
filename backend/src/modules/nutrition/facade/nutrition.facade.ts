@@ -39,7 +39,7 @@ export class NutritionFacade {
       dto.goal,
     );
 
-    const meals = this.generator.generate(
+    const meals = await this.generator.generate(
       dto.dietPreference,
       targets,
       dto.budgetPreference,
@@ -58,6 +58,8 @@ export class NutritionFacade {
         dailyProteinG: targets.dailyProteinG,
         dailyCarbsG: targets.dailyCarbsG,
         dailyFatG: targets.dailyFatG,
+        bmr: targets.bmr,
+        tdee: targets.tdee,
         mealPlanType: dto.dietPreference,
         activityLevel: dto.activityLevel,
         goalType: dto.goal,
@@ -116,13 +118,53 @@ export class NutritionFacade {
       plan.goalType!,
     );
 
-    const meals = this.generator.generate(
+    const meals = await this.generator.generate(
       plan.mealPlanType as any,
       targets,
       (plan.budgetPreference as any) ?? 'MEDIUM',
     );
 
     await this.planRepo.replaceMeals(planId, meals);
+
+    const updated = await this.planRepo.findByIdWithMeals(planId);
+    return NutritionMapper.planWithMealsToResponse(updated!);
+  }
+
+  /**
+   * Regenerate a single meal within a plan.
+   * Replaces just that meal's food items; all other meals stay unchanged.
+   */
+  async regenerateSingleMeal(
+    planId: string,
+    mealId: string,
+    userId: string,
+  ): Promise<NutritionPlanWithMealsResponseDto> {
+    const plan = await this.planRepo.findByIdWithMeals(planId);
+    if (!plan) throw new NotFoundError('NutritionPlan', planId);
+    if (plan.userId !== userId) {
+      throw new AuthorizationError('You do not own this resource');
+    }
+    if (!plan.mealPlanType) {
+      throw new NotFoundError('Generation context for NutritionPlan', planId);
+    }
+
+    const meal = plan.meals.find((m) => m.id === mealId);
+    if (!meal) throw new NotFoundError('MealTemplate', mealId);
+
+    const generated = await this.generator.generateSingleMeal(
+      plan.mealPlanType as any,
+      {
+        mealName: meal.mealName,
+        mealOrder: meal.mealOrder,
+        targetCalories: meal.calories,
+        targetProteinG: meal.proteinG,
+        targetCarbsG: meal.carbsG,
+        targetFatG: meal.fatG,
+      },
+      (plan.budgetPreference as any) ?? 'MEDIUM',
+    );
+
+    await this.planRepo.updateMealFoodItems(mealId, generated.foodItems, generated.notes);
 
     const updated = await this.planRepo.findByIdWithMeals(planId);
     return NutritionMapper.planWithMealsToResponse(updated!);

@@ -17,6 +17,17 @@ export function NutrientProgressCard({
   unit,
   label,
 }: NutrientProgressCardProps) {
+  if (target == null) {
+    return (
+      <div className="space-y-2">
+        <p className="text-sm font-medium">{label}</p>
+        <p className="text-xs text-muted-foreground">
+          No nutrition plan set. Create one to track {label.toLowerCase()}.
+        </p>
+      </div>
+    );
+  }
+
   const percentage = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
   const remaining = Math.max(target - current, 0);
 

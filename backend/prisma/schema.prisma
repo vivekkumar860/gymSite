@@ -331,6 +331,10 @@ model Profile {
   dietaryPreference DietaryPreference @default(NO_PREFERENCE) @map("dietary_preference")
   timezone          String            @default("UTC") @db.VarChar(50)
   avatarUrl         String?           @map("avatar_url") @db.VarChar(500)
+  weightUnit        String            @default("kg") @map("weight_unit") @db.VarChar(10)
+  distanceUnit      String            @default("km") @map("distance_unit") @db.VarChar(10)
+  theme             String            @default("system") @map("theme") @db.VarChar(20)
+  notifPrefs        Json?             @map("notif_prefs")
   createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -366,6 +370,7 @@ model Exercise {
   movementPattern MovementPattern?   @map("movement_pattern")
   instructions    String?            @db.Text
   videoUrl        String?            @map("video_url") @db.VarChar(500)
+  imageUrl        String?            @map("image_url") @db.VarChar(500)
   isCompound      Boolean            @default(false) @map("is_compound")
   isActive        Boolean            @default(true) @map("is_active")
   createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz
@@ -380,6 +385,7 @@ model Exercise {
   @@index([primaryMuscle], name: "idx_exercises_primary_muscle")
   @@index([equipment], name: "idx_exercises_equipment")
   @@index([difficulty], name: "idx_exercises_difficulty")
+  @@index([isActive], name: "idx_exercises_is_active")
   @@map("exercises")
 }
 
@@ -422,6 +428,7 @@ model WorkoutDay {
   workoutSessions WorkoutSession[]
 
   @@unique([planId, dayOrder], name: "uq_workout_days_plan_order")
+  @@index([planId], name: "idx_workout_days_plan")
   @@map("workout_days")
 }
 
@@ -444,6 +451,8 @@ model WorkoutDayExercise {
   exercise Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
 
   @@unique([dayId, exerciseOrder], name: "uq_day_exercises_day_order")
+  @@index([dayId], name: "idx_day_exercises_day")
+  @@index([exerciseId], name: "idx_day_exercises_exercise")
   @@map("workout_day_exercises")
 }
 
@@ -466,6 +475,8 @@ model WorkoutSession {
   setLogs WorkoutSetLog[]
 
   @@index([userId, startedAt(sort: Desc)], name: "idx_sessions_user_date")
+  @@index([dayId], name: "idx_sessions_day")
+  @@index([userId, sessionStatus], name: "idx_sessions_user_status")
   @@map("workout_sessions")
 }
 
@@ -502,6 +513,8 @@ model NutritionPlan {
   dailyProteinG    Int               @map("daily_protein_g") @db.SmallInt
   dailyCarbsG      Int               @map("daily_carbs_g") @db.SmallInt
   dailyFatG        Int               @map("daily_fat_g") @db.SmallInt
+  bmr              Int?              @db.SmallInt
+  tdee             Int?              @db.SmallInt
   isActive         Boolean           @default(true) @map("is_active")
   mealPlanType     MealPlanType?     @map("meal_plan_type")
   activityLevel    ActivityLevel?    @map("activity_level")
@@ -541,6 +554,7 @@ model MealTemplate {
   nutritionPlan NutritionPlan @relation(fields: [nutritionPlanId], references: [id], onDelete: Cascade)
 
   @@unique([nutritionPlanId, mealOrder], name: "uq_meal_templates_plan_order")
+  @@index([nutritionPlanId], name: "idx_meal_templates_plan")
   @@map("meal_templates")
 }
 
@@ -563,6 +577,7 @@ model HabitDefinition {
 
   @@unique([userId, habitName], name: "uq_habit_definitions_user_name")
   @@index([userId], name: "idx_habit_definitions_user")
+  @@index([userId, isActive], name: "idx_habit_definitions_user_active")
   @@map("habit_definitions")
 }
 
@@ -582,6 +597,8 @@ model HabitEntry {
 
   @@unique([habitId, entryDate], name: "uq_habit_entries_habit_date")
   @@index([entryDate(sort: Desc)], name: "idx_habit_entries_date")
+  @@index([habitId], name: "idx_habit_entries_habit")
+  @@index([habitId, entryDate], name: "idx_habit_entries_habit_date")
   @@map("habit_entries")
 }
 
@@ -618,6 +635,7 @@ model BodyMeasurement {
 
   @@unique([userId, site, measuredAt], name: "uq_body_measurements_user_site_date")
   @@index([userId, measuredAt(sort: Desc)], name: "idx_body_measurements_user_date")
+  @@index([userId, site], name: "idx_body_measurements_user_site")
   @@map("body_measurements")
 }
 
@@ -678,6 +696,7 @@ model GoalMilestone {
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
   @@unique([goalId, milestoneOrder], name: "uq_milestones_goal_order")
+  @@index([goalId], name: "idx_milestones_goal")
   @@map("goal_milestones")
 }
 
@@ -698,4 +717,27 @@ model AdminAuditLog {
   @@index([adminUserId, createdAt(sort: Desc)], name: "idx_audit_logs_admin")
   @@index([targetTable, targetRecordId], name: "idx_audit_logs_target")
   @@map("admin_audit_logs")
+}
+
+/// Reference food item from the Indian RDA dataset, used for meal planning
+model FoodItem {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @unique @db.VarChar(200)
+  calories     Int      @db.SmallInt
+  proteinG     Float    @map("protein_g") @db.Real
+  carbsG       Float    @map("carbs_g") @db.Real
+  fatG         Float    @map("fat_g") @db.Real
+  fibreG       Float?   @map("fibre_g") @db.Real
+  isVeg        Boolean  @default(true) @map("is_veg")
+  forBreakfast Boolean  @default(false) @map("for_breakfast")
+  forLunch     Boolean  @default(false) @map("for_lunch")
+  forDinner    Boolean  @default(false) @map("for_dinner")
+  cuisine      String   @default("INDIAN") @db.VarChar(50)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([isVeg], name: "idx_food_items_is_veg")
+  @@index([forBreakfast], name: "idx_food_items_breakfast")
+  @@index([forLunch], name: "idx_food_items_lunch")
+  @@index([forDinner], name: "idx_food_items_dinner")
+  @@map("food_items")
 }

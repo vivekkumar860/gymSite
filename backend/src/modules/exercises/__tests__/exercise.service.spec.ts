@@ -22,6 +22,7 @@ function buildExercise(
     movementPattern: 'PUSH',
     instructions: 'Lie flat on bench, press bar up.',
     videoUrl: null,
+    imageUrl: null,
     isCompound: true,
     isActive: true,
     createdBy: 'user-1',

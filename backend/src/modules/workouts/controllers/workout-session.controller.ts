@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -27,8 +28,12 @@ import type {
   WorkoutSetLogResponseDto,
 } from '../dto/workout-response.dto';
 import type { PaginatedResult } from '../../../common/types/pagination';
+import { z } from 'zod';
 
 const DEFAULT_RECENT_SESSIONS_LIMIT = 20;
+const RecentSessionsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(DEFAULT_RECENT_SESSIONS_LIMIT),
+});
 
 /** Handles workout session and set logging endpoints. */
 @Controller('workout-sessions')
@@ -40,13 +45,10 @@ export class WorkoutSessionController {
   @Get()
   async listRecent(
     @CurrentUser() userId: string,
-    @Query('limit') limit?: string,
+    @Query(new ZodValidationPipe(RecentSessionsQuerySchema))
+    query: z.infer<typeof RecentSessionsQuerySchema>,
   ): Promise<WorkoutSessionResponseDto[]> {
-    const parsedLimit = Math.min(
-      Number(limit) || DEFAULT_RECENT_SESSIONS_LIMIT,
-      DEFAULT_RECENT_SESSIONS_LIMIT,
-    );
-    return this.sessionService.getRecentSessions(userId, parsedLimit);
+    return this.sessionService.getRecentSessions(userId, query.limit);
   }
 
   /** Get workout session history with date-range filter and pagination. */
@@ -116,5 +118,16 @@ export class WorkoutSessionController {
     @CurrentUser() userId: string,
   ): Promise<WorkoutSetLogResponseDto[]> {
     return this.sessionService.getSessionSets(sessionId, userId);
+  }
+
+  /** Delete a set from a session. */
+  @Delete(':sessionId/sets/:setId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteSet(
+    @Param('sessionId', ParseUUIDPipe) sessionId: string,
+    @Param('setId', ParseUUIDPipe) setId: string,
+    @CurrentUser() userId: string,
+  ): Promise<void> {
+    await this.sessionService.deleteSet(sessionId, setId, userId);
   }
 }

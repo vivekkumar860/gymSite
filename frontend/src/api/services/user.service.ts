@@ -21,6 +21,14 @@ const profileResponseSchema = z.object({
   dietaryPreference: z.string(),
   timezone: z.string(),
   avatarUrl: z.string().nullable(),
+  weightUnit: z.string().optional(),
+  distanceUnit: z.string().optional(),
+  theme: z.string().optional(),
+  notifPrefs: z.object({
+    email: z.boolean(),
+    push: z.boolean(),
+    workout_reminders: z.boolean(),
+  }).nullable().optional(),
 });
 
 export type ProfileResponse = z.infer<typeof profileResponseSchema>;
@@ -63,16 +71,25 @@ export async function updateProfile(
 }
 
 export async function getPreferences(): Promise<UserPreferences> {
-  return defaultPreferences;
+  const profile = await getProfile();
+  return {
+    weightUnit: (profile.weightUnit as UserPreferences["weightUnit"]) ?? "kg",
+    distanceUnit: (profile.distanceUnit as UserPreferences["distanceUnit"]) ?? "km",
+    theme: (profile.theme as UserPreferences["theme"]) ?? "system",
+    notifications: (profile.notifPrefs as UserPreferences["notifications"]) ?? defaultPreferences.notifications,
+  };
 }
 
 export async function updatePreferences(
-  _data: Partial<UserPreferences>,
+  data: Partial<UserPreferences>,
 ): Promise<UserPreferences> {
-  throw new ApiError(
-    501,
-    "Preferences saving is not yet implemented. Your changes were not saved.",
-  );
+  const payload: Record<string, unknown> = {};
+  if (data.weightUnit) payload.weightUnit = data.weightUnit;
+  if (data.distanceUnit) payload.distanceUnit = data.distanceUnit;
+  if (data.theme) payload.theme = data.theme;
+  if (data.notifications) payload.notifPrefs = data.notifications;
+  await apiClient.patch("/profiles/me", payload, z.any());
+  return getPreferences();
 }
 
 export async function completeOnboarding(

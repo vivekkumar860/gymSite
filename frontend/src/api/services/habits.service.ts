@@ -56,6 +56,10 @@ export async function updateHabit(
   return apiClient.patch(`/habits/${id}`, data, habitResponseSchema);
 }
 
+export async function deleteHabit(id: string): Promise<void> {
+  await apiClient.delete(`/habits/${id}`);
+}
+
 export async function logHabitCompletion(
   habitId: string,
   data: { date: string; completed: boolean; count: number },
@@ -73,4 +77,24 @@ export async function logHabitCompletion(
 
 export async function getHabitStreaks(): Promise<HabitResponse[]> {
   return getHabits();
+}
+
+export async function getTodayEntries(
+  habitIds: string[],
+): Promise<HabitEntryResponse[]> {
+  const today = new Date().toISOString().split("T")[0];
+  const entries: HabitEntryResponse[] = [];
+  for (const habitId of habitIds) {
+    try {
+      const result = await apiClient.get(
+        `/habits/${habitId}/entries`,
+        z.array(habitEntryResponseSchema),
+        { from: today, to: today },
+      );
+      entries.push(...result);
+    } catch {
+      // Skip individual failures
+    }
+  }
+  return entries;
 }

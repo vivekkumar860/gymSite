@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { apiClient, ApiError } from "@/api/client";
-import type { DailyNutrition } from "@/api/schemas/nutrition.schema";
+import type {
+  DailyNutrition,
+  NutritionPlanData,
+  NutritionPlanSummary,
+  PlanFoodItem,
+  PlanMeal,
+} from "@/api/schemas/nutrition.schema";
 
 // ---------------------------------------------------------------------------
 // Backend Zod schemas (match NestJS DTOs)
@@ -26,10 +32,13 @@ const nutritionPlanWithMealsSchema = z.object({
   dailyProteinG: z.number(),
   dailyCarbsG: z.number(),
   dailyFatG: z.number(),
+  bmr: z.number().nullable(),
+  tdee: z.number().nullable(),
   isActive: z.boolean(),
   mealPlanType: z.string().nullable(),
   activityLevel: z.string().nullable(),
   goalType: z.string().nullable(),
+  budgetPreference: z.string().nullable(),
   createdAt: z.string(),
   meals: z.array(mealTemplateSchema),
 });
@@ -118,6 +127,167 @@ function emptyDailyNutrition(date: string): DailyNutrition {
     totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 },
     targetMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Active Nutrition Plan — structured plan view (not consumption tracking)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch the active nutrition plan with meals and food items.
+ * Returns null when no active plan exists (404).
+ */
+export async function getActiveNutritionPlan(): Promise<NutritionPlanData | null> {
+  try {
+    const plan = await apiClient.get(
+      "/nutrition-plans/active",
+      nutritionPlanWithMealsSchema,
+    );
+    return composeNutritionPlan(plan);
+  } catch (err) {
+    if (err instanceof ApiError && err.statusCode === 404) return null;
+    throw err;
+  }
+}
+
+function composeNutritionPlan(plan: BackendNutritionPlan): NutritionPlanData {
+  const meals: PlanMeal[] = plan.meals
+    .sort((a, b) => a.mealOrder - b.mealOrder)
+    .map((m) => ({
+      id: m.id,
+      name: m.mealName,
+      order: m.mealOrder,
+      notes: m.notes,
+      macros: {
+        calories: m.calories,
+        protein: m.proteinG,
+        carbs: m.carbsG,
+        fat: m.fatG,
+      },
+      foodItems: parseFoodItems(m.foodItems),
+    }));
+
+  return {
+    id: plan.id,
+    planName: plan.planName,
+    dietType: plan.dietType,
+    mealPlanType: plan.mealPlanType,
+    budgetPreference: plan.budgetPreference,
+    activityLevel: plan.activityLevel,
+    goalType: plan.goalType,
+    bmr: plan.bmr ?? null,
+    tdee: plan.tdee ?? null,
+    targetMacros: {
+      calories: plan.dailyCalories,
+      protein: plan.dailyProteinG,
+      carbs: plan.dailyCarbsG,
+      fat: plan.dailyFatG,
+    },
+    meals,
+  };
+}
+
+/** Safely parse the foodItems JSON column from the backend. */
+function parseFoodItems(raw: unknown): PlanFoodItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(
+      (item): item is Record<string, unknown> =>
+        typeof item === "object" && item !== null && "name" in item,
+    )
+    .map((item) => ({
+      name: String(item.name ?? ""),
+      quantity: String(item.quantity ?? ""),
+      calories: Number(item.calories ?? 0),
+      protein: Number(item.proteinG ?? 0),
+      carbs: Number(item.carbsG ?? 0),
+      fat: Number(item.fatG ?? 0),
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Plan generation & regeneration
+// ---------------------------------------------------------------------------
+
+import type { GenerateNutritionPlanFormValues } from "@/features/nutrition/schemas/generate-nutrition-plan-schema";
+
+export async function generateNutritionPlan(
+  data: GenerateNutritionPlanFormValues,
+): Promise<NutritionPlanData> {
+  const plan = await apiClient.post(
+    "/nutrition-plans/generate",
+    data,
+    nutritionPlanWithMealsSchema,
+  );
+  return composeNutritionPlan(plan);
+}
+
+export async function regenerateMeals(planId: string): Promise<NutritionPlanData> {
+  const plan = await apiClient.post(
+    `/nutrition-plans/${planId}/regenerate`,
+    {},
+    nutritionPlanWithMealsSchema,
+  );
+  return composeNutritionPlan(plan);
+}
+
+export async function regenerateSingleMeal(
+  planId: string,
+  mealId: string,
+): Promise<NutritionPlanData> {
+  const plan = await apiClient.post(
+    `/nutrition-plans/${planId}/meals/${mealId}/regenerate`,
+    {},
+    nutritionPlanWithMealsSchema,
+  );
+  return composeNutritionPlan(plan);
+}
+
+// ---------------------------------------------------------------------------
+// Plan history
+// ---------------------------------------------------------------------------
+
+const nutritionPlanSchema = z.object({
+  id: z.string(),
+  planName: z.string(),
+  dietType: z.string(),
+  dailyCalories: z.number(),
+  dailyProteinG: z.number(),
+  dailyCarbsG: z.number(),
+  dailyFatG: z.number(),
+  bmr: z.number().nullable(),
+  tdee: z.number().nullable(),
+  isActive: z.boolean(),
+  mealPlanType: z.string().nullable(),
+  activityLevel: z.string().nullable(),
+  goalType: z.string().nullable(),
+  budgetPreference: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+export async function getNutritionPlanHistory(): Promise<NutritionPlanSummary[]> {
+  const plans = await apiClient.get(
+    "/nutrition-plans",
+    z.array(nutritionPlanSchema),
+  );
+  return plans.map((p) => ({
+    id: p.id,
+    planName: p.planName,
+    dietType: p.dietType,
+    dailyCalories: p.dailyCalories,
+    isActive: p.isActive,
+    mealPlanType: p.mealPlanType,
+    budgetPreference: p.budgetPreference,
+    createdAt: p.createdAt,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Plan activation
+// ---------------------------------------------------------------------------
+
+export async function activatePlan(planId: string): Promise<void> {
+  await apiClient.patch(`/nutrition-plans/${planId}/activate`, {}, nutritionPlanSchema);
 }
 
 // ---------------------------------------------------------------------------

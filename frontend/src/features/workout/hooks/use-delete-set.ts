@@ -6,7 +6,8 @@ export function useDeleteSet() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (setId: string) => workoutService.deleteSet(setId),
+    mutationFn: ({ sessionId, setId }: { sessionId: string; setId: string }) =>
+      workoutService.deleteSet(sessionId, setId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.today() });
       queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });

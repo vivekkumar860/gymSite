@@ -41,6 +41,7 @@ export function buildExercise(overrides: Record<string, unknown> = {}) {
     difficulty: 'INTERMEDIATE',
     instructions: 'Lie flat on bench, press bar up.',
     videoUrl: null,
+    imageUrl: null,
     isCompound: true,
     isActive: true,
     createdBy: 'user-1',

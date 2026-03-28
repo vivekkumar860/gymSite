@@ -199,6 +199,12 @@ export class AuthService {
     await this.sessionRepo.revokeAllForUser(userId);
   }
 
+  /** Deactivate the current user's account and revoke all sessions. */
+  async deactivateAccount(userId: string): Promise<void> {
+    await this.credentialRepo.deactivateUser(userId);
+    await this.sessionRepo.revokeAllForUser(userId);
+  }
+
   // ── Private helpers ──────────────────────────────────────────
 
   private async ensureEmailNotTaken(email: string): Promise<void> {
@@ -228,6 +234,13 @@ export class AuthService {
       throw new DomainError(
         ERROR_CODES.AUTH_ACCOUNT_SUSPENDED,
         'Account is suspended',
+        403,
+      );
+    }
+    if (user.accountStatus === 'DEACTIVATED') {
+      throw new DomainError(
+        ERROR_CODES.AUTH_ACCOUNT_SUSPENDED,
+        'Account has been deactivated',
         403,
       );
     }

@@ -1,6 +1,8 @@
 import { Global, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './infrastructure/database/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
@@ -12,6 +14,7 @@ import { HabitsModule } from './modules/habits/habits.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { HealthModule } from './modules/health/health.module';
 import { FileStoragePort } from './infrastructure/adapters/storage/file-storage.port';
 import { LocalStorageAdapter } from './infrastructure/adapters/storage/local-storage.adapter';
 import { EmailPort } from './infrastructure/adapters/email/email.port';
@@ -39,6 +42,9 @@ class InfrastructureModule {}
     // Event system for domain events
     EventEmitterModule.forRoot(),
 
+    // Rate limiting — 100 requests per minute globally
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+
     // Database
     PrismaModule,
 
@@ -62,6 +68,13 @@ class InfrastructureModule {}
 
     // Phase 4: Operations
     AdminModule,
+
+    // Infrastructure
+    HealthModule,
+  ],
+  providers: [
+    // Apply rate limiting globally
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}

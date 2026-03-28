@@ -24,6 +24,14 @@ export const UpdateProfileSchema = z.object({
   fitnessLevel: z.enum(FITNESS_LEVEL_VALUES).optional(),
   dietaryPreference: z.enum(DIETARY_PREFERENCE_VALUES).optional(),
   timezone: z.string().min(1).max(50).optional(),
+  weightUnit: z.enum(['kg', 'lbs']).optional(),
+  distanceUnit: z.enum(['km', 'mi']).optional(),
+  theme: z.enum(['light', 'dark', 'system']).optional(),
+  notifPrefs: z.object({
+    email: z.boolean(),
+    push: z.boolean(),
+    workout_reminders: z.boolean(),
+  }).optional(),
 });
 
 export type UpdateProfileDto = z.infer<typeof UpdateProfileSchema>;

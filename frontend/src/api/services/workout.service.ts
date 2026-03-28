@@ -337,6 +337,20 @@ export async function getWorkoutById(id: string): Promise<Workout> {
   };
 }
 
-export async function deleteSet(setId: string): Promise<void> {
-  return apiClient.delete(`/sets/${setId}`);
+export async function deleteSet(sessionId: string, setId: string): Promise<void> {
+  return apiClient.delete(`/workout-sessions/${sessionId}/sets/${setId}`);
+}
+
+// ---------------------------------------------------------------------------
+// Plan generation
+// ---------------------------------------------------------------------------
+
+import type { GeneratePlanFormValues } from "@/features/workout/schemas/generate-plan-schema";
+
+export type WorkoutPlanResponse = z.infer<typeof workoutPlanSchema>;
+
+export async function generateWorkoutPlan(
+  data: GeneratePlanFormValues,
+): Promise<WorkoutPlanResponse> {
+  return apiClient.post("/workout-plans/generate", data, workoutPlanSchema);
 }

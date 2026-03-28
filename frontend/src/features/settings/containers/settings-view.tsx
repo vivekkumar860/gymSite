@@ -8,6 +8,7 @@ import { useUpdatePreferences } from "../hooks/use-update-preferences";
 import { ProfileForm } from "../components/profile-form";
 import { PreferencesForm } from "../components/preferences-form";
 import { DangerZone } from "../components/danger-zone";
+import { useDeleteAccount } from "../hooks/use-delete-account";
 import { PageHeader } from "@/shared/components/page-header";
 import { LoadingSkeleton } from "@/shared/components/loading-skeleton";
 import { ErrorBoundaryCard } from "@/shared/components/error-boundary-card";
@@ -20,6 +21,7 @@ export function SettingsView() {
     usePreferences();
   const updateProfile = useUpdateProfile();
   const updatePreferences = useUpdatePreferences();
+  const deleteAccount = useDeleteAccount();
 
   if (profileLoading || prefsLoading) {
     return <LoadingSkeleton variant="detail" />;
@@ -82,7 +84,10 @@ export function SettingsView() {
         </TabsContent>
 
         <TabsContent value="account" className="mt-4">
-          <DangerZone />
+          <DangerZone
+            onDeleteAccount={() => deleteAccount.mutate()}
+            isDeleting={deleteAccount.isPending}
+          />
         </TabsContent>
       </Tabs>
     </div>

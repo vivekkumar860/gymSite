@@ -6,9 +6,10 @@ import { ConfirmDialog } from "@/shared/components/confirm-dialog";
 
 type DangerZoneProps = {
   onDeleteAccount?: () => void;
+  isDeleting?: boolean;
 };
 
-export function DangerZone({ onDeleteAccount }: DangerZoneProps) {
+export function DangerZone({ onDeleteAccount, isDeleting }: DangerZoneProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
@@ -24,8 +25,9 @@ export function DangerZone({ onDeleteAccount }: DangerZoneProps) {
       <Button
         variant="destructive"
         onClick={() => setConfirmOpen(true)}
+        disabled={isDeleting}
       >
-        Delete Account
+        {isDeleting ? "Deleting..." : "Delete Account"}
       </Button>
 
       <ConfirmDialog

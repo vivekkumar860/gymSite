@@ -44,6 +44,8 @@ export class WorkoutPlanController {
     private readonly workoutFacade: WorkoutFacade,
   ) {}
 
+  // ── Static / non-parameterised paths FIRST ────────────────────
+
   /** Generate a workout plan from user inputs. */
   @Post('generate')
   @HttpCode(HttpStatus.CREATED)
@@ -70,6 +72,74 @@ export class WorkoutPlanController {
   ): Promise<WorkoutPlanResponseDto[]> {
     return this.planService.getUserPlans(userId);
   }
+
+  // ── Day sub-resource routes (before :planId catch-all) ────────
+
+  /** Get a workout day with all its exercises (detail view). */
+  @Get('days/:dayId')
+  async getDayDetail(
+    @Param('dayId', ParseUUIDPipe) dayId: string,
+    @CurrentUser() userId: string,
+  ): Promise<WorkoutDayDetailResponseDto> {
+    return this.planService.getDayDetail(dayId, userId);
+  }
+
+  /** Reschedule a missed workout day. */
+  @Patch('days/:dayId/reschedule')
+  async rescheduleDay(
+    @Param('dayId', ParseUUIDPipe) dayId: string,
+    @CurrentUser() userId: string,
+    @Body(new ZodValidationPipe(RescheduleDaySchema)) dto: RescheduleDayDto,
+  ): Promise<WorkoutDayResponseDto> {
+    return this.planService.rescheduleDay(dayId, userId, dto.newDate);
+  }
+
+  /** Delete a day from a workout plan. */
+  @Delete('days/:dayId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeDay(
+    @Param('dayId', ParseUUIDPipe) dayId: string,
+    @CurrentUser() userId: string,
+  ): Promise<void> {
+    await this.planService.removeDay(dayId, userId);
+  }
+
+  /** List exercises in a workout day. */
+  @Get('days/:dayId/exercises')
+  async listDayExercises(
+    @Param('dayId', ParseUUIDPipe) dayId: string,
+    @CurrentUser() userId: string,
+  ): Promise<WorkoutDayExerciseResponseDto[]> {
+    return this.planService.getDayExercises(dayId, userId);
+  }
+
+  /** Add an exercise to a workout day. */
+  @Post('days/:dayId/exercises')
+  @HttpCode(HttpStatus.CREATED)
+  async addExercise(
+    @Param('dayId', ParseUUIDPipe) dayId: string,
+    @CurrentUser() userId: string,
+    @Body(new ZodValidationPipe(AddDayExerciseSchema)) dto: AddDayExerciseDto,
+  ): Promise<WorkoutDayExerciseResponseDto> {
+    return this.planService.addExerciseToDay(dayId, userId, dto);
+  }
+
+  /** Remove an exercise from a workout day. */
+  @Delete('days/:dayId/exercises/:exerciseEntryId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeExercise(
+    @Param('dayId', ParseUUIDPipe) dayId: string,
+    @Param('exerciseEntryId', ParseUUIDPipe) exerciseEntryId: string,
+    @CurrentUser() userId: string,
+  ): Promise<void> {
+    await this.planService.removeExerciseFromDay(
+      exerciseEntryId,
+      dayId,
+      userId,
+    );
+  }
+
+  // ── Plan :planId routes (catch-all parameter LAST) ────────────
 
   /** Get a single workout plan. */
   @Get(':planId')
@@ -121,25 +191,6 @@ export class WorkoutPlanController {
     return this.planService.getPlanDays(planId, userId);
   }
 
-  /** Get a workout day with all its exercises (detail view). */
-  @Get('days/:dayId')
-  async getDayDetail(
-    @Param('dayId', ParseUUIDPipe) dayId: string,
-    @CurrentUser() userId: string,
-  ): Promise<WorkoutDayDetailResponseDto> {
-    return this.planService.getDayDetail(dayId, userId);
-  }
-
-  /** Reschedule a missed workout day. */
-  @Patch('days/:dayId/reschedule')
-  async rescheduleDay(
-    @Param('dayId', ParseUUIDPipe) dayId: string,
-    @CurrentUser() userId: string,
-    @Body(new ZodValidationPipe(RescheduleDaySchema)) dto: RescheduleDayDto,
-  ): Promise<WorkoutDayResponseDto> {
-    return this.planService.rescheduleDay(dayId, userId, dto.newDate);
-  }
-
   /** Add a day to a workout plan. */
   @Post(':planId/days')
   @HttpCode(HttpStatus.CREATED)
@@ -150,50 +201,5 @@ export class WorkoutPlanController {
     dto: CreateWorkoutDayDto,
   ): Promise<WorkoutDayResponseDto> {
     return this.planService.addDay(planId, userId, dto);
-  }
-
-  /** Delete a day from a workout plan. */
-  @Delete('days/:dayId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async removeDay(
-    @Param('dayId', ParseUUIDPipe) dayId: string,
-    @CurrentUser() userId: string,
-  ): Promise<void> {
-    await this.planService.removeDay(dayId, userId);
-  }
-
-  /** List exercises in a workout day. */
-  @Get('days/:dayId/exercises')
-  async listDayExercises(
-    @Param('dayId', ParseUUIDPipe) dayId: string,
-    @CurrentUser() userId: string,
-  ): Promise<WorkoutDayExerciseResponseDto[]> {
-    return this.planService.getDayExercises(dayId, userId);
-  }
-
-  /** Add an exercise to a workout day. */
-  @Post('days/:dayId/exercises')
-  @HttpCode(HttpStatus.CREATED)
-  async addExercise(
-    @Param('dayId', ParseUUIDPipe) dayId: string,
-    @CurrentUser() userId: string,
-    @Body(new ZodValidationPipe(AddDayExerciseSchema)) dto: AddDayExerciseDto,
-  ): Promise<WorkoutDayExerciseResponseDto> {
-    return this.planService.addExerciseToDay(dayId, userId, dto);
-  }
-
-  /** Remove an exercise from a workout day. */
-  @Delete('days/:dayId/exercises/:exerciseEntryId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async removeExercise(
-    @Param('dayId', ParseUUIDPipe) dayId: string,
-    @Param('exerciseEntryId', ParseUUIDPipe) exerciseEntryId: string,
-    @CurrentUser() userId: string,
-  ): Promise<void> {
-    await this.planService.removeExerciseFromDay(
-      exerciseEntryId,
-      dayId,
-      userId,
-    );
   }
 }

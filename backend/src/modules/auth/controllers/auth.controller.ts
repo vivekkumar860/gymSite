@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Post,
   Body,
@@ -7,6 +8,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from '../services/auth.service';
 import { ZodValidationPipe } from '../../../common/pipes';
 import { JwtAuthGuard } from '../../../common/guards';
@@ -26,6 +28,7 @@ export class AuthController {
 
   /** Register a new user with email and password. */
   @Post('register')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body(new ZodValidationPipe(RegisterSchema)) dto: any,
@@ -35,6 +38,7 @@ export class AuthController {
 
   /** Authenticate with email and password. */
   @Post('login')
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   async login(
     @Body(new ZodValidationPipe(LoginSchema)) dto: any,
@@ -51,6 +55,7 @@ export class AuthController {
 
   /** Request a password reset email. Always returns 200 to prevent email enumeration. */
   @Post('forgot-password')
+  @Throttle({ default: { ttl: 3600000, limit: 3 } })
   @HttpCode(HttpStatus.OK)
   async forgotPassword(
     @Body(new ZodValidationPipe(ForgotPasswordSchema)) dto: any,
@@ -95,5 +100,13 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async logoutAll(@CurrentUser() userId: string): Promise<void> {
     await this.authService.logoutAll(userId);
+  }
+
+  /** Deactivate the authenticated user's account. */
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteAccount(@CurrentUser() userId: string): Promise<void> {
+    await this.authService.deactivateAccount(userId);
   }
 }

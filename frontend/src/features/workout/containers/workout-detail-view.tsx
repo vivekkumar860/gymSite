@@ -8,6 +8,7 @@ import { WorkoutDetailExercises } from "../components/workout-detail-exercises";
 import { LoadingSkeleton } from "@/shared/components/loading-skeleton";
 import { ErrorBoundaryCard } from "@/shared/components/error-boundary-card";
 import { PageHeader } from "@/shared/components/page-header";
+import { formatErrorMessage } from "@/shared/utils/format-error";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon } from "lucide-react";
 import { ROUTES } from "@/config/routes";
@@ -22,7 +23,7 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
         <PageHeader title="Workout Details" />
         <LoadingSkeleton variant="detail" />
       </div>
@@ -31,10 +32,10 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
         <PageHeader title="Workout Details" />
         <ErrorBoundaryCard
-          message={error.message ?? "Failed to load workout."}
+          message={formatErrorMessage(error, "Failed to load workout.")}
           onRetry={() => refetch()}
         />
       </div>
@@ -43,7 +44,7 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
 
   if (!workout) {
     return (
-      <div className="space-y-6">
+      <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
         <PageHeader title="Workout Details" />
         <ErrorBoundaryCard message="Workout not found." />
       </div>
@@ -53,12 +54,13 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
   const isCompleted = workout.status === "completed";
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
       <PageHeader title="Workout Details">
         <Button
           variant="outline"
           size="sm"
           onClick={() => router.push(ROUTES.workout.history)}
+          className="hover:border-primary/40 hover:bg-primary/5"
         >
           <ArrowLeftIcon className="mr-1.5 size-4" />
           Back to History
@@ -77,9 +79,9 @@ export function WorkoutDetailView({ workoutId }: WorkoutDetailViewProps) {
       <WorkoutDetailExercises exercises={workout.exercises} />
 
       {workout.notes && (
-        <div className="rounded-lg border p-4">
-          <h3 className="mb-1 text-sm font-medium">Notes</h3>
-          <p className="text-sm text-muted-foreground">{workout.notes}</p>
+        <div className="glass rounded-2xl border-glow p-4">
+          <h3 className="mb-1 font-mono text-xs uppercase tracking-widest text-primary/60">Notes</h3>
+          <p className="text-sm text-muted-foreground/80">{workout.notes}</p>
         </div>
       )}
     </div>

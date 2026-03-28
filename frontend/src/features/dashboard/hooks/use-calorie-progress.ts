@@ -12,7 +12,7 @@ export function useCalorieProgress() {
     queryFn: async (): Promise<NutrientProgressData> => {
       const nutrition = await dashboardService.getDailyNutrition(today);
       if (!nutrition) {
-        return { current: 0, target: 2000, unit: "kcal" };
+        return { current: 0, target: null, unit: "kcal" };
       }
       return {
         current: nutrition.totalMacros.calories,

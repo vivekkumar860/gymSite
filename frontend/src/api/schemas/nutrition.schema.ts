@@ -67,3 +67,55 @@ export const dailyNutritionSchema = z.object({
 });
 
 export type DailyNutrition = z.infer<typeof dailyNutritionSchema>;
+
+// ---------------------------------------------------------------------------
+// Nutrition Plan types (from backend meal templates + foodItems JSON)
+// ---------------------------------------------------------------------------
+
+/** A food item stored in the backend meal template's foodItems JSON column. */
+export type PlanFoodItem = {
+  name: string;
+  /** Human-readable quantity, e.g. "200g", "2 eggs" */
+  quantity: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+/** A meal within an active nutrition plan. */
+export type PlanMeal = {
+  id: string;
+  name: string;
+  order: number;
+  notes: string | null;
+  macros: Macros;
+  foodItems: PlanFoodItem[];
+};
+
+/** The active nutrition plan with its meals and daily targets. */
+export type NutritionPlanData = {
+  id: string;
+  planName: string;
+  dietType: string;
+  mealPlanType: string | null;
+  budgetPreference: string | null;
+  activityLevel: string | null;
+  goalType: string | null;
+  bmr: number | null;
+  tdee: number | null;
+  targetMacros: Macros;
+  meals: PlanMeal[];
+};
+
+/** Summary of a nutrition plan (used in plan history list). */
+export type NutritionPlanSummary = {
+  id: string;
+  planName: string;
+  dietType: string;
+  dailyCalories: number;
+  isActive: boolean;
+  mealPlanType: string | null;
+  budgetPreference: string | null;
+  createdAt: string;
+};

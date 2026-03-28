@@ -115,6 +115,25 @@ export class WorkoutSessionService {
     return sets.map(WorkoutMapper.setLogToResponse);
   }
 
+  /** Delete a set from a session. */
+  async deleteSet(
+    sessionId: string,
+    setId: string,
+    userId: string,
+  ): Promise<void> {
+    const session = await this.findSessionOrFail(sessionId);
+    this.ensureOwnership(session.userId, userId);
+    this.ensureSessionInProgress(session.sessionStatus);
+
+    const setLog = await this.sessionRepo.findSetById(setId);
+    if (!setLog) throw new NotFoundError('WorkoutSetLog', setId);
+    if (setLog.sessionId !== sessionId) {
+      throw new NotFoundError('WorkoutSetLog', setId);
+    }
+
+    await this.sessionRepo.deleteSet(setId);
+  }
+
   /** Complete a workout session and emit event. */
   async completeSession(
     sessionId: string,

@@ -68,3 +68,7 @@ export async function refreshToken(
 export async function getCurrentUser(): Promise<CurrentUser> {
   return apiClient.get("/auth/me", currentUserSchema);
 }
+
+export async function deleteAccount(): Promise<void> {
+  await apiClient.delete("/auth/me");
+}

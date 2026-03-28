@@ -10,6 +10,7 @@ export interface ExerciseDomain {
   movementPattern: string | null;
   instructions: string | null;
   videoUrl: string | null;
+  imageUrl: string | null;
   isCompound: boolean;
   isActive: boolean;
   createdBy: string | null;

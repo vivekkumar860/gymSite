@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/config/query-keys";
 import * as nutritionService from "@/api/services/nutrition.service";
-import type { Meal } from "@/api/schemas/nutrition.schema";
 
-export function useLogMeal() {
+export function useActivatePlan() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Omit<Meal, "id">) => nutritionService.logMeal(data),
+    mutationFn: (planId: string) => nutritionService.activatePlan(planId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.nutrition.all });
     },

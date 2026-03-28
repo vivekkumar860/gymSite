@@ -13,12 +13,12 @@ export type QueryParams = Record<string, string | number | boolean | undefined>;
 
 export class ApiError extends Error {
   statusCode: number;
-  errors?: Record<string, string[]>;
+  errors?: Record<string, string | string[]>;
 
   constructor(
     statusCode: number,
     message: string,
-    errors?: Record<string, string[]>,
+    errors?: Record<string, string | string[]>,
   ) {
     super(message);
     this.name = "ApiError";
@@ -115,11 +115,13 @@ async function handleResponse<T>(
     } catch {
       // response may not be JSON
     }
-    throw new ApiError(
-      response.status,
-      body.message ?? response.statusText,
-      body.errors,
-    );
+    const msg =
+      typeof body.message === "string"
+        ? body.message
+        : Array.isArray(body.message)
+          ? (body.message as string[]).join(". ")
+          : response.statusText;
+    throw new ApiError(response.status, msg, body.errors);
   }
 
   // For 204 No Content or when no schema is provided, return undefined as T

@@ -18,11 +18,19 @@ const envSchema = z.object({
   // Refresh tokens
   REFRESH_TOKEN_SECRET: z.string().min(32),
 
-  // CORS
+  // CORS — required in production, has default for dev
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
-});
+}).refine(
+  (data) => {
+    if (data.NODE_ENV === 'production' && data.CORS_ORIGIN === 'http://localhost:3000') {
+      return false;
+    }
+    return true;
+  },
+  { message: 'CORS_ORIGIN must be explicitly set in production (not the default localhost value)' },
+);
 
-export type EnvConfig = z.infer<typeof envSchema>;
+export type EnvConfig = z.output<typeof envSchema>;
 
 /**
  * Validates environment variables at startup.

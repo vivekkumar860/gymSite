@@ -76,6 +76,46 @@ export function buildMealsFromTemplates(
   });
 }
 
+/**
+ * Build a single scaled meal from one template and explicit macro targets.
+ * Used for per-meal regeneration where the meal's targets are already known.
+ */
+export function buildSingleMealFromTemplate(
+  template: TemplateMeal,
+  mealOrder: number,
+  targetCalories: number,
+  targetProteinG: number,
+  targetCarbsG: number,
+  targetFatG: number,
+): GeneratedMeal {
+  const templateTotalCalories = template.foods.reduce(
+    (sum, f) => sum + f.baseCalories,
+    0,
+  );
+  const scaleFactor =
+    templateTotalCalories > 0 ? targetCalories / templateTotalCalories : 1;
+
+  const foodItems: FoodItem[] = template.foods.map((food) => ({
+    name: food.name,
+    quantity: scaleQuantity(food.baseQuantity, scaleFactor),
+    calories: Math.round(food.baseCalories * scaleFactor),
+    proteinG: Math.round(food.baseProteinG * scaleFactor),
+    carbsG: Math.round(food.baseCarbsG * scaleFactor),
+    fatG: Math.round(food.baseFatG * scaleFactor),
+  }));
+
+  return {
+    mealName: template.mealName,
+    mealOrder,
+    calories: targetCalories,
+    proteinG: targetProteinG,
+    carbsG: targetCarbsG,
+    fatG: targetFatG,
+    notes: template.notes,
+    foodItems,
+  };
+}
+
 /** Scale a human-readable quantity string by a factor. */
 function scaleQuantity(baseQuantity: string, factor: number): string {
   const match = baseQuantity.match(/^([\d.]+)\s*(.*)/);

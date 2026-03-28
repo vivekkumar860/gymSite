@@ -13,7 +13,7 @@ export type LogSetFormValues = {
   weight: number;
   weightUnit: "kg" | "lbs";
   isWarmup: boolean;
-  isDropSet: boolean;
+  isFailure: boolean;
   rpe?: number;
 };
 
@@ -37,6 +37,6 @@ export function toLogSetDto(
     repsCompleted: values.reps,
     rpe: values.rpe,
     isWarmup: values.isWarmup,
-    isFailure: values.isDropSet,
+    isFailure: values.isFailure,
   };
 }

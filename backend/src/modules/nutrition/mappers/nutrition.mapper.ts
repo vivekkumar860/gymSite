@@ -22,6 +22,8 @@ export class NutritionMapper {
       dailyProteinG: record.dailyProteinG,
       dailyCarbsG: record.dailyCarbsG,
       dailyFatG: record.dailyFatG,
+      bmr: record.bmr,
+      tdee: record.tdee,
       isActive: record.isActive,
       mealPlanType: record.mealPlanType,
       activityLevel: record.activityLevel,
@@ -53,10 +55,13 @@ export class NutritionMapper {
       dailyProteinG: domain.dailyProteinG,
       dailyCarbsG: domain.dailyCarbsG,
       dailyFatG: domain.dailyFatG,
+      bmr: domain.bmr ?? null,
+      tdee: domain.tdee ?? null,
       isActive: domain.isActive,
       mealPlanType: domain.mealPlanType,
       activityLevel: domain.activityLevel,
       goalType: domain.goalType,
+      budgetPreference: domain.budgetPreference,
       createdAt: domain.createdAt.toISOString(),
     };
   }

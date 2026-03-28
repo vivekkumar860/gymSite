@@ -8,3 +8,10 @@ export function useDailyNutrition(date: string) {
     queryFn: () => nutritionService.getDailyNutrition(date),
   });
 }
+
+export function useActiveNutritionPlan() {
+  return useQuery({
+    queryKey: [...queryKeys.nutrition.all, "active-plan"],
+    queryFn: nutritionService.getActiveNutritionPlan,
+  });
+}

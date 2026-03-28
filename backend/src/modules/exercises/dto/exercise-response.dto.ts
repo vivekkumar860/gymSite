@@ -10,6 +10,7 @@ export interface ExerciseResponseDto {
   movementPattern: string | null;
   instructions: string | null;
   videoUrl: string | null;
+  imageUrl: string | null;
   isCompound: boolean;
   isActive: boolean;
 }

@@ -15,7 +15,7 @@ export type TodaysWorkoutData = {
 
 export type NutrientProgressData = {
   current: number;
-  target: number;
+  target: number | null;
   unit: string;
 };
 

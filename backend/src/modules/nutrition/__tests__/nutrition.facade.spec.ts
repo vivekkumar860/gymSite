@@ -57,6 +57,8 @@ describe('NutritionFacade', () => {
     dailyProteinG: 150,
     dailyCarbsG: 201,
     dailyFatG: 67,
+    bmr: 1650,
+    tdee: 1980,
     isActive: true,
     mealPlanType: 'INDIAN_VEGETARIAN',
     activityLevel: 'SEDENTARY',
@@ -100,7 +102,8 @@ describe('NutritionFacade', () => {
     } as any;
 
     generator = {
-      generate: jest.fn().mockReturnValue(mockMeals),
+      generate: jest.fn().mockResolvedValue(mockMeals),
+      generateSingleMeal: jest.fn().mockResolvedValue(mockMeals[0]),
     } as any;
 
     repo = {

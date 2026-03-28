@@ -5,3 +5,5 @@ dist/
 !.env.example
 tsconfig.tsbuildinfo
 .next/
+.DS_Store
+Datasets/

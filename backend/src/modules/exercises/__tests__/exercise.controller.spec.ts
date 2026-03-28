@@ -19,6 +19,7 @@ describe('ExerciseController', () => {
     movementPattern: 'PUSH',
     instructions: 'Press the bar.',
     videoUrl: null,
+    imageUrl: null,
     isCompound: true,
     isActive: true,
   };

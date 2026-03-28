@@ -12,7 +12,7 @@ export function useProteinProgress() {
     queryFn: async (): Promise<NutrientProgressData> => {
       const nutrition = await dashboardService.getDailyNutrition(today);
       if (!nutrition) {
-        return { current: 0, target: 150, unit: "g" };
+        return { current: 0, target: null, unit: "g" };
       }
       return {
         current: nutrition.totalMacros.protein,

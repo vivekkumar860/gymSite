@@ -8,6 +8,7 @@ import { ExerciseGrid } from "../components/exercise-grid";
 import { LoadingSkeleton } from "@/shared/components/loading-skeleton";
 import { ErrorBoundaryCard } from "@/shared/components/error-boundary-card";
 import { EmptyState } from "@/shared/components/empty-state";
+import { formatErrorMessage } from "@/shared/utils/format-error";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/routes";
 import { DEFAULT_PAGE_SIZE } from "@/config/constants";
@@ -38,14 +39,17 @@ export function ExerciseLibraryView() {
 
   if (error) {
     return (
-      <ErrorBoundaryCard
-        message={error.message ?? "Failed to load exercises."}
-      />
+      <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
+        <ErrorBoundaryCard
+          message={formatErrorMessage(error, "Failed to load exercises.")}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen mesh-bg space-y-6 p-4 md:p-6">
+      <h1 className="text-2xl font-black tracking-tighter">Exercise Library</h1>
       <ExerciseFilters filters={filters} onFiltersChange={handleFiltersChange} />
 
       {isLoading ? (
@@ -70,10 +74,11 @@ export function ExerciseLibraryView() {
                 size="sm"
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
+                className="hover:border-primary/40 hover:bg-primary/5"
               >
                 Previous
               </Button>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm font-mono text-muted-foreground">
                 Page {meta.page} of {meta.totalPages}
               </span>
               <Button
@@ -81,6 +86,7 @@ export function ExerciseLibraryView() {
                 size="sm"
                 disabled={page >= meta.totalPages}
                 onClick={() => setPage(page + 1)}
+                className="hover:border-primary/40 hover:bg-primary/5"
               >
                 Next
               </Button>

@@ -20,7 +20,7 @@ export function TodaysWorkoutSection() {
       isEmpty={!workout}
       emptyMessage="No workout scheduled for today."
       emptyAction={{
-        label: "View Workout Plans",
+        label: "Create Workout Plan",
         onClick: () => router.push(ROUTES.workout.plan),
       }}
     >

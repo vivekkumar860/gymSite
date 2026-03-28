@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 type CreateHabitFormProps = {
   onSubmit: (values: CreateHabitFormValues) => void;
   isSubmitting?: boolean;
+  defaultValues?: Partial<{ name: string; frequency: string; targetCount: number; color?: string }>;
 };
 
 const PREDEFINED_COLORS = [
@@ -36,6 +37,7 @@ const PREDEFINED_COLORS = [
 export function CreateHabitForm({
   onSubmit,
   isSubmitting,
+  defaultValues: prefill,
 }: CreateHabitFormProps) {
   const {
     register,
@@ -46,11 +48,11 @@ export function CreateHabitForm({
   } = useForm({
     resolver: zodResolver(createHabitSchema),
     defaultValues: {
-      name: "",
+      name: prefill?.name ?? "",
       description: "",
-      frequency: "DAILY",
-      targetCount: 1,
-      color: undefined,
+      frequency: (prefill?.frequency as "DAILY" | "WEEKLY") ?? "DAILY",
+      targetCount: prefill?.targetCount ?? 1,
+      color: prefill?.color ?? undefined,
       icon: undefined,
     },
   });

@@ -98,4 +98,12 @@ export class AuthCredentialRepository {
       data: { lockedUntil },
     });
   }
+
+  /** Deactivate a user account (soft delete). */
+  async deactivateUser(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { accountStatus: 'DEACTIVATED' },
+    });
+  }
 }

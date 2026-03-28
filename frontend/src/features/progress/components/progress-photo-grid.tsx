@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { ProgressPhoto } from "@/api/schemas/progress.schema";
 
 type ProgressPhotoGridProps = {
@@ -19,19 +20,25 @@ export function ProgressPhotoGrid({ photos }: ProgressPhotoGridProps) {
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
       {photos.map((photo) => (
         <div key={photo.id} className="space-y-2">
-          <div className="aspect-square rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-            {photo.imageUrl ? (
-              <img
-                src={photo.imageUrl}
-                alt={`Progress photo from ${photo.date}`}
-                className="size-full object-cover"
+          <div className="relative aspect-square rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+            {photo.storagePath ? (
+              <Image
+                src={photo.storagePath}
+                alt={`Progress photo — ${photo.pose} from ${photo.takenAt}`}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover"
               />
             ) : (
               <span className="text-xs text-muted-foreground">No image</span>
             )}
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            {photo.date}
+            {new Date(photo.takenAt).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
           </p>
           {photo.notes && (
             <p className="text-xs text-muted-foreground text-center truncate">

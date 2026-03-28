@@ -78,6 +78,16 @@ export interface GeneratedMeal {
   foodItems: FoodItem[];
 }
 
+/** Parameters for regenerating a single meal within a plan */
+export interface SingleMealParams {
+  mealName: string;
+  mealOrder: number;
+  targetCalories: number;
+  targetProteinG: number;
+  targetCarbsG: number;
+  targetFatG: number;
+}
+
 /** Strategy interface for generating meal plans based on dietary preference */
 export interface MealPlanStrategy {
   readonly planType: MealPlanTypeInput;
@@ -85,4 +95,8 @@ export interface MealPlanStrategy {
     targets: NutritionTargets,
     budgetPreference: BudgetPreferenceInput,
   ): GeneratedMeal[];
+  generateSingleMeal(
+    params: SingleMealParams,
+    budgetPreference: BudgetPreferenceInput,
+  ): GeneratedMeal;
 }

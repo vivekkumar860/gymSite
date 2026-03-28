@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getTodayWorkout } from "../workout.service";
+import { getTodayWorkout, generateWorkoutPlan } from "../workout.service";
 import { clearTokens, storeTokens } from "../../client";
 
 const mockFetch = vi.fn();
@@ -138,5 +138,70 @@ describe("workout.service — getTodayWorkout", () => {
     expect(workout!.id).toBe("sess-1");
     expect(workout!.exercises[0].sets).toHaveLength(1);
     expect(workout!.exercises[0].sets[0].weightKg).toBe(60);
+  });
+});
+
+describe("workout.service — generateWorkoutPlan", () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+    clearTokens();
+    storeTokens("test-token", "test-refresh");
+  });
+
+  it("sends POST to /workout-plans/generate and returns the plan", async () => {
+    const input = {
+      goal: "GAIN_MUSCLE" as const,
+      experienceLevel: "INTERMEDIATE" as const,
+      daysPerWeek: 4,
+      durationWeeks: 8,
+      sessionDurationMinutes: 60,
+      availableEquipment: ["BARBELL" as const, "DUMBBELL" as const],
+      injuryRestrictions: [],
+    };
+
+    const responsePlan = {
+      id: "plan-new",
+      planName: "4-Day Gain Muscle Plan",
+      description: "Generated plan",
+      planStatus: "ACTIVE",
+      goalId: null,
+      durationWeeks: 8,
+      daysPerWeek: 4,
+      createdAt: "2025-06-01T00:00:00Z",
+    };
+
+    mockFetch.mockResolvedValueOnce(jsonResponse(responsePlan, 201));
+
+    const result = await generateWorkoutPlan(input);
+
+    expect(result.id).toBe("plan-new");
+    expect(result.planName).toBe("4-Day Gain Muscle Plan");
+    expect(result.planStatus).toBe("ACTIVE");
+    expect(result.daysPerWeek).toBe(4);
+
+    // Verify fetch was called with correct URL and method
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toContain("/workout-plans/generate");
+    expect(options.method).toBe("POST");
+    expect(JSON.parse(options.body)).toEqual(input);
+  });
+
+  it("throws on validation error from backend", async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ message: "Validation failed", code: "VALIDATION_ERROR" }, 400),
+    );
+
+    const input = {
+      goal: "GAIN_MUSCLE" as const,
+      experienceLevel: "BEGINNER" as const,
+      daysPerWeek: 3,
+      durationWeeks: 8,
+      sessionDurationMinutes: 60,
+      availableEquipment: ["BODYWEIGHT" as const],
+      injuryRestrictions: [],
+    };
+
+    await expect(generateWorkoutPlan(input)).rejects.toThrow();
   });
 });

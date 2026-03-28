@@ -38,16 +38,17 @@ export function WorkoutTimer({ startedAt, isActive }: WorkoutTimerProps) {
   if (!startedAt) return null;
 
   return (
-    <div className="flex items-center gap-2 text-lg font-mono tabular-nums">
+    <div className="flex items-center gap-2 rounded-xl glass px-3 py-1.5">
       <span
-        className={
+        className={`text-2xl font-mono font-black tabular-nums ${
           isActive
-            ? "text-green-500 animate-pulse"
+            ? "text-green-500"
             : "text-muted-foreground"
-        }
+        }`}
       >
         {formatElapsed(elapsed)}
       </span>
+      {isActive && <span className="size-2 rounded-full bg-green-400 animate-pulse" />}
     </div>
   );
 }

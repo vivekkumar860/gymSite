@@ -29,7 +29,22 @@
       "Bash(pg_isready -h localhost -p 5432)",
       "Bash(timeout 10 node dist/main.js)",
       "Bash(find /Users/shubham/Documents/Vivek/gymSite/frontend/src -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "Bash(curl -s http://localhost:3001/api/exercises)",
+      "Bash(curl -v http://localhost:3001/api/exercises)",
+      "Bash(psql postgresql://gymuser:gympass@localhost:5432/gym_fitness -c \"SELECT 1\")",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl:*)",
+      "Bash(grep -E \"\\\\.\\(ts\\)$\")",
+      "Bash(ls:*)",
+      "Bash(git stash:*)",
+      "Bash(while read:*)",
+      "Bash(do find:*)",
+      "Bash(done)",
+      "Bash(grep -v \":0$\")",
+      "Bash(xargs cat:*)"
     ]
   }
 }

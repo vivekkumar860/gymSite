@@ -45,9 +45,10 @@ export type ExerciseProgress = z.infer<typeof exerciseProgressSchema>;
 
 export const progressPhotoSchema = z.object({
   id: z.string(),
-  date: z.string(),
-  imageUrl: z.string(),
-  notes: z.string().optional(),
+  pose: z.string(),
+  storagePath: z.string(),
+  takenAt: z.string(),
+  notes: z.string().nullable().optional(),
 });
 
 export type ProgressPhoto = z.infer<typeof progressPhotoSchema>;

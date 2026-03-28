@@ -79,6 +79,8 @@ export class NutritionPlanRepository {
       dailyProteinG: number;
       dailyCarbsG: number;
       dailyFatG: number;
+      bmr?: number;
+      tdee?: number;
       mealPlanType: string;
       activityLevel: string;
       goalType: string;
@@ -98,6 +100,8 @@ export class NutritionPlanRepository {
         dailyProteinG: planData.dailyProteinG,
         dailyCarbsG: planData.dailyCarbsG,
         dailyFatG: planData.dailyFatG,
+        bmr: planData.bmr,
+        tdee: planData.tdee,
         mealPlanType: planData.mealPlanType as any,
         activityLevel: planData.activityLevel as any,
         goalType: planData.goalType as any,
@@ -192,6 +196,18 @@ export class NutritionPlanRepository {
       data: { ...data, nutritionPlanId: planId },
     });
     return NutritionMapper.mealToDomain(record);
+  }
+
+  /** Update a meal template's food items and notes. */
+  async updateMealFoodItems(
+    mealId: string,
+    foodItems: unknown[],
+    notes: string,
+  ): Promise<void> {
+    await this.prisma.mealTemplate.update({
+      where: { id: mealId },
+      data: { foodItems: foodItems as any, notes },
+    });
   }
 
   /** Delete a meal template. */

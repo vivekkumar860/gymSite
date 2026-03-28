@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { ExercisesModule } from '../exercises/exercises.module';
 import { WorkoutPlanController } from './controllers/workout-plan.controller';
 import { WorkoutSessionController } from './controllers/workout-session.controller';
+import { WorkoutAnalyticsController } from './controllers/workout-analytics.controller';
 import { WorkoutPlanService } from './services/workout-plan.service';
 import { WorkoutSessionService } from './services/workout-session.service';
+import { WorkoutAnalyticsService } from './services/workout-analytics.service';
 import { WorkoutFacade } from './facades/workout.facade';
 import { WorkoutPlanFactory } from './factories/workout-plan.factory';
 import { WorkoutPlanRepository } from './repositories/workout-plan.repository';
@@ -17,10 +19,11 @@ import {
 
 @Module({
   imports: [ExercisesModule],
-  controllers: [WorkoutPlanController, WorkoutSessionController],
+  controllers: [WorkoutPlanController, WorkoutSessionController, WorkoutAnalyticsController],
   providers: [
     WorkoutPlanService,
     WorkoutSessionService,
+    WorkoutAnalyticsService,
     WorkoutFacade,
     WorkoutPlanFactory,
     { provide: WORKOUT_PLAN_REPOSITORY, useClass: WorkoutPlanRepository },

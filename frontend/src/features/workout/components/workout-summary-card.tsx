@@ -2,7 +2,6 @@
 
 import type { Workout } from "../types/workout.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { CheckCircleIcon, ClockIcon, DumbbellIcon, LayersIcon } from "lucide-react";
 
 type WorkoutSummaryCardProps = {
@@ -28,7 +27,7 @@ export function WorkoutSummaryCard({ workout }: WorkoutSummaryCardProps) {
     : null;
 
   return (
-    <Card className="border-green-500/30 bg-green-50/50 dark:bg-green-950/10">
+    <Card className="glass card-depth-2 rounded-2xl border-green-500/20 bg-green-500/5 animate-scale-in">
       <CardHeader>
         <div className="flex items-center gap-2">
           <CheckCircleIcon className="size-5 text-green-500" />
@@ -48,7 +47,7 @@ export function WorkoutSummaryCard({ workout }: WorkoutSummaryCardProps) {
             value={String(totalSets)}
           />
           <SummaryStat
-            icon={<Badge variant="secondary" className="size-4 p-0 flex items-center justify-center text-[10px]">V</Badge>}
+            icon={<span className="text-xs font-bold">V</span>}
             label="Volume"
             value={`${totalVolume.toLocaleString()} kg`}
           />
@@ -78,9 +77,9 @@ function SummaryStat({
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         {icon}
-        <span className="text-xs">{label}</span>
+        <span className="font-mono text-[10px] uppercase tracking-widest">{label}</span>
       </div>
-      <span className="text-lg font-semibold">{value}</span>
+      <span className="text-lg font-black tabular-nums">{value}</span>
     </div>
   );
 }

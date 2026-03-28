@@ -53,6 +53,25 @@ export class NutritionController {
     return this.nutritionFacade.getActivePlan(userId);
   }
 
+  /** Activate a specific nutrition plan, deactivating all others. */
+  @Patch(':planId/activate')
+  async activatePlan(
+    @Param('planId', ParseUUIDPipe) planId: string,
+    @CurrentUser() userId: string,
+  ): Promise<NutritionPlanResponseDto> {
+    return this.nutritionService.activatePlan(planId, userId);
+  }
+
+  /** Regenerate a single meal within a plan using its stored generation context. */
+  @Post(':planId/meals/:mealId/regenerate')
+  async regenerateSingleMeal(
+    @Param('planId', ParseUUIDPipe) planId: string,
+    @Param('mealId', ParseUUIDPipe) mealId: string,
+    @CurrentUser() userId: string,
+  ): Promise<NutritionPlanWithMealsResponseDto> {
+    return this.nutritionFacade.regenerateSingleMeal(planId, mealId, userId);
+  }
+
   /** Regenerate meals for an existing plan using its stored generation context. */
   @Post(':planId/regenerate')
   async regenerateMeals(
