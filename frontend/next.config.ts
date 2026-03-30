@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: "export",
   compress: true,
   experimental: {
     optimizePackageImports: ["lucide-react"],
