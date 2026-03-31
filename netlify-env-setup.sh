@@ -1,0 +1,45 @@
+#!/bin/bash
+
+echo "📝 Netlify Environment Variables Setup"
+echo "======================================"
+echo ""
+echo "1. Go to: https://app.netlify.com"
+echo "2. Select your site: gymplannerworkout"
+echo "3. Navigate to: Site Settings → Environment Variables"
+echo ""
+echo "4. Add these variables (copy each line):"
+echo ""
+echo "----------------------------------------"
+echo "NEXT_PUBLIC_API_BASE_URL"
+echo "Value: https://gymsite-backend.onrender.com"
+echo ""
+echo "NEXT_PUBLIC_APP_NAME"
+echo "Value: GymPlanner Workout"
+echo ""
+echo "NEXT_PUBLIC_APP_URL"
+echo "Value: https://gymplannerworkout.netlify.app"
+echo "----------------------------------------"
+echo ""
+echo "5. After adding all variables, trigger a redeploy:"
+echo "   • Go to 'Deploys' tab"
+echo "   • Click 'Trigger deploy' → 'Deploy site'"
+echo ""
+echo "Press Enter once you've added the environment variables..."
+read -p ""
+
+echo ""
+echo "Checking if backend is ready..."
+response=$(curl -s https://gymsite-backend.onrender.com/health)
+if [[ $response == *"ok"* ]]; then
+    echo "✅ Backend is running!"
+    echo "Response: $response"
+else
+    echo "⚠️  Backend not responding yet. It may be:"
+    echo "   - Still deploying (wait 5-10 minutes)"
+    echo "   - Sleeping (free tier sleeps after 15 min inactivity)"
+    echo "   - Not deployed yet"
+fi
+
+echo ""
+echo "Once Netlify redeploys, your site should be fully functional!"
+echo "Visit: https://gymplannerworkout.netlify.app"
