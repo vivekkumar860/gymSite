@@ -5,15 +5,15 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://your-backend-url.com/api/:splat"
+  to = "https://gymsite-backend.onrender.com/api/:splat"
   status = 200
   force = true
 
 [build.environment]
   NODE_VERSION = "20"
-  NEXT_PUBLIC_API_BASE_URL = "https://your-backend-url.com"
-  NEXT_PUBLIC_APP_NAME = "FitTrack"
-  NEXT_PUBLIC_APP_URL = "https://your-site.netlify.app"
+  NEXT_PUBLIC_API_BASE_URL = "https://gymsite-backend.onrender.com"
+  NEXT_PUBLIC_APP_NAME = "GymPlanner Workout"
+  NEXT_PUBLIC_APP_URL = "https://gymplannerworkout.netlify.app"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
