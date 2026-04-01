@@ -154,9 +154,10 @@ export class WorkoutSessionService {
     }));
 
     const totalVolume = this.volumeStrategy.calculateVolume(setData);
+    const completedAt = completed.completedAt || new Date();
     const durationMinutes = this.calculateDuration(
       session.startedAt,
-      completed.completedAt!,
+      completedAt,
     );
 
     this.eventEmitter.emit(
@@ -168,7 +169,7 @@ export class WorkoutSessionService {
         totalVolume,
         sets.length,
         durationMinutes,
-        completed.completedAt!,
+        completedAt,
       ),
     );
 

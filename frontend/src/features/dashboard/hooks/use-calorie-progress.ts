@@ -15,8 +15,8 @@ export function useCalorieProgress() {
         return { current: 0, target: null, unit: "kcal" };
       }
       return {
-        current: nutrition.totalMacros.calories,
-        target: nutrition.targetMacros.calories,
+        current: nutrition.totalMacros?.calories ?? 0,
+        target: nutrition.targetMacros?.calories ?? null,
         unit: "kcal",
       };
     },

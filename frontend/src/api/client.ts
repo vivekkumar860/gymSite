@@ -44,7 +44,8 @@ function getCookie(name: string): string {
 }
 
 function setCookie(name: string, value: string, maxAge = COOKIE_MAX_AGE_SECS) {
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`;
 }
 
 function deleteCookie(name: string) {
@@ -119,7 +120,7 @@ async function handleResponse<T>(
       typeof body.message === "string"
         ? body.message
         : Array.isArray(body.message)
-          ? (body.message as string[]).join(". ")
+          ? body.message.filter((m): m is string => typeof m === "string").join(". ")
           : response.statusText;
     throw new ApiError(response.status, msg, body.errors);
   }
@@ -163,7 +164,9 @@ async function tryRefreshToken(): Promise<boolean> {
 async function refreshOnce(): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = tryRefreshToken().finally(() => {
-      refreshPromise = null;
+      setTimeout(() => {
+        refreshPromise = null;
+      }, 100);
     });
   }
   return refreshPromise;

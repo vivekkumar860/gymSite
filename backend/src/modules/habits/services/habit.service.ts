@@ -5,8 +5,8 @@ import { StreakCalculatorService } from './streak-calculator.service';
 import type { IHabitRepository } from '../interfaces';
 import { HabitMapper } from '../mappers/habit.mapper';
 import { HabitEntryLoggedEvent } from '../events/habit-entry-logged.event';
-import { NotFoundError, AuthorizationError } from '../../../common/errors';
-import { DOMAIN_EVENTS } from '../../../common/constants';
+import { NotFoundError, AuthorizationError, DomainError } from '../../../common/errors';
+import { DOMAIN_EVENTS, ERROR_CODES } from '../../../common/constants';
 import type { CreateHabitDto } from '../dto/create-habit.dto';
 import type { UpdateHabitDto } from '../dto/update-habit.dto';
 import type { LogHabitEntryDto } from '../dto/log-habit-entry.dto';
@@ -103,10 +103,21 @@ export class HabitService {
     const habit = await this.findHabitOrFail(habitId);
     this.ensureOwnership(habit.userId, userId);
 
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+      throw new DomainError(
+        ERROR_CODES.VALIDATION_FAILED,
+        'Invalid date format provided',
+        400,
+      );
+    }
+
     const entries = await this.habitRepo.findEntries(
       habitId,
-      new Date(from),
-      new Date(to),
+      fromDate,
+      toDate,
     );
     return entries.map(HabitMapper.entryToResponse);
   }

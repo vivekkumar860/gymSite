@@ -283,6 +283,7 @@ export class AuthService {
 
   private async handleFailedLogin(user: AuthUser): Promise<void> {
     const newCount = user.failedLoginCount + 1;
+    await this.credentialRepo.incrementFailedLogins(user.id);
 
     if (newCount >= MAX_FAILED_LOGIN_ATTEMPTS) {
       const lockedUntil = new Date();
@@ -290,10 +291,7 @@ export class AuthService {
         lockedUntil.getMinutes() + ACCOUNT_LOCKOUT_MINUTES,
       );
       await this.credentialRepo.lockAccount(user.id, lockedUntil);
-      return;
     }
-
-    await this.credentialRepo.incrementFailedLogins(user.id);
   }
 
   private async createSessionForUser(user: AuthUser): Promise<TokenPair> {
